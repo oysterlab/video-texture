@@ -1,26 +1,38 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <VideoTexture :videoSrc='src'/>
+  <!-- <VideoTexture :videoSrc='src' :rect='rect' :scale='scale'  :position='position'/> -->
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import VideoTexture from './components/VideoTexture.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    VideoTexture
+  },
+  data() {
+    return {
+      src: require('./assets/sample.mp4'),
+      scale: 0.4,
+      rect: [{x: -0.5, y: 1},
+								{x:  1, y: 1},
+								{x: -1, y:-0.5},
+								{x:  1, y:-1}],
+      position: [0.0, 0.0]
+    }
   }
 }
 </script>
 
 <style>
+body {
+  margin: 0px;
+  padding: 0px;
+  background: #000;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  width: 100vw;
+  height: 100vh;
 }
 </style>
