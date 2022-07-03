@@ -59,71 +59,88 @@ export default {
 		}
 	},
 	mounted: function() {
-			const { width:WIDTH, height: HEIGHT, scale: SCALE, position:TRANSLATE } = this
+		const { width:WIDTH, height: HEIGHT, scale: SCALE, position:TRANSLATE } = this
 
-			const scene = new THREE.Scene()
-			const camera = new THREE.PerspectiveCamera()
-			const renderer = new THREE.WebGLRenderer({ antialias: true })		
-			const geometry = new THREE.PlaneGeometry(2, 2)
+		const scene = new THREE.Scene()
+		const camera = new THREE.PerspectiveCamera()
+		const renderer = new THREE.WebGLRenderer({ antialias: true })		
+		const geometry = new THREE.PlaneGeometry(2, 2)
+		const uv = geometry.getAttribute('uv')
+		console.log(uv.array)
+		uv.array[0] = 0; uv.array[1] = 1;
+		uv.array[2] = 1; uv.array[3] = 1;
+		uv.array[4] = 0; uv.array[5] = 0;
+		uv.array[6] = 1; uv.array[7] = 0;				
 
-			this.rect.forEach(({x, y}, i) => geometry.attributes.position.setXY(i, x, y))
+		// uv.array[0] = 0; uv.array[1] = 1;
+		// uv.array[2] = 1; uv.array[3] = 1;
+		// uv.array[4] = 1; uv.array[5] = 0;
+		// uv.array[6] = 0; uv.array[7] = 0;				
+		
+		uv.needsUpdate = true
+		// 0 1 
+		// 1 1 
+		// 0 0 
+		// 1 0
+ 
+		this.rect.forEach(({x, y}, i) => geometry.attributes.position.setXY(i, x, y))
 
-			const vertexShader = `
-				varying vec2 vUv;
-				uniform float scale;
-				uniform vec2 translate;
+		const vertexShader = `
+			varying vec2 vUv;
+			uniform float scale;
+			uniform vec2 translate;
 
-				void main() {
-					vUv = uv;
-					vec2 scaledPosition = position.xy * scale + translate;
-					gl_Position = vec4(scaledPosition, 1.0, 1.0);
-				}
-			`
+			void main() {
+				vUv = uv;
+				vec2 scaledPosition = position.xy * scale + translate;
+				gl_Position = vec4(scaledPosition, 1.0, 1.0);
+			}
+		`
 
-			const fragmentShader = `
-				uniform sampler2D map;
-				varying vec2 vUv;
-				void main() {
-					vec4 videoColor = texture2D(map, vUv);
-					gl_FragColor = vec4(videoColor.rgb, 1.0);
-				}
-			`
+		const fragmentShader = `
+			uniform sampler2D map;
+			varying vec2 vUv;
+			void main() {
+				vec4 videoColor = texture2D(map, vUv);
+				gl_FragColor = vec4(videoColor.rgb, 1.0);
+			}
+		`
 
-			const video = document.createElement('video')
-			const source = document.createElement('source')
-			source.src = this.videoSrc
-			source.type = 'video/mp4'
-			video.muted = 'muted'
-			video.appendChild(source)
-			video.play()
+		const video = document.createElement('video')
+		const source = document.createElement('source')
+		source.src = this.videoSrc
+		source.type = 'video/mp4'
+		video.muted = 'muted'
+		video.appendChild(source)
+		video.play()
 
-			const texture = new THREE.VideoTexture(video)
-			texture.minFilter = THREE.LinearFilter
-			texture.magFilter = THREE.LinearFilter
+		const texture = new THREE.VideoTexture(video)
+		texture.minFilter = THREE.LinearFilter
+		texture.magFilter = THREE.LinearFilter
 
-			const material = new THREE.ShaderMaterial({
-				transparent: true,
-				uniforms: {
-					scale: { value: SCALE },
-					map: { value: texture },
-					translate: { value: TRANSLATE}
-				},
-				vertexShader, fragmentShader
-			})
-			const mesh = new THREE.Mesh(geometry, material)
+		const material = new THREE.ShaderMaterial({
+			transparent: true,
+			uniforms: {
+				scale: { value: SCALE },
+				map: { value: texture },
+				translate: { value: TRANSLATE}
+			},
+			vertexShader, fragmentShader
+		})
+		const mesh = new THREE.Mesh(geometry, material)
 
-			this.scene = scene
-			this.renderer = renderer
-			this.camera = camera
-			this.mesh = mesh
-			this.source = source
-			this.video = video
+		this.scene = scene
+		this.renderer = renderer
+		this.camera = camera
+		this.mesh = mesh
+		this.source = source
+		this.video = video
 
-			this.scene.add(this.mesh)
-			this.renderer.setSize(WIDTH, HEIGHT)
+		this.scene.add(this.mesh)
+		this.renderer.setSize(WIDTH, HEIGHT)
 
-			this.$refs.canvas.appendChild(this.renderer.domElement)
-			this.animate()
+		this.$refs.canvas.appendChild(this.renderer.domElement)
+		this.animate()
 	},
 	methods: {
 		animate: function() {
